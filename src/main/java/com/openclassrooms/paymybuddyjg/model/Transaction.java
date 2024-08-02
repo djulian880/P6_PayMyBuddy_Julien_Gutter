@@ -7,25 +7,24 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
-
- 
 @Entity
-@Table(name = "User")
-public class User {
+@Table(name = "Transaction")
+public class Transaction {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "idUser")
-	private int idUser;
+	@Column(name = "idTransaction")
+	private int idTransaction;
  
-	@Column(name = "username")
-	private String userName;
+	@Column(name = "description")
+	private String description;
  
-	@Column(name = "email")
-	private String email;
+	@Column(name = "amount")
+	private Double amount;
  
-	@Column(name = "password")
-	private String password;
+	@Column(name = "sender_Id")
+	private int senderId;
 	
-	
+	@Column(name = "receiver_Id")
+	private int receiverId;
 }
