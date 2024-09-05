@@ -29,13 +29,13 @@ public class User {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id_user;
  
-	@Column(name = "username")
+	@Column(name = "username", unique = true, nullable = false)
 	private String userName;
  
-	@Column
+	@Column(unique = true, nullable = false)
 	private String email;
  
-	@Column(name = "password")
+	@Column(name = "password", nullable = false)
 	private String password;
 	
 	@OneToMany(
