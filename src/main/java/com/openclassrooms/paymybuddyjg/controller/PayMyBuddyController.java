@@ -116,6 +116,7 @@ public class PayMyBuddyController {
 			if (userUpdated.getUserName().isEmpty() || userUpdated.getEmail().isEmpty()
 					|| userUpdated.getPassword().isEmpty()) {
 				return "redirect:/profile?error=true";
+				
 			} else {
 				userLogged.setEmail(userUpdated.getEmail());
 				userLogged.setUserName(userUpdated.getUserName());
