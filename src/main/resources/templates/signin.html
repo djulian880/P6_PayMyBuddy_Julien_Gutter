@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+
+<html xmlns:th="http://www.thymeleaf.org">
+
+  <head>
+   <link rel="stylesheet" th:href="@{/css/style.css}" /> 
+  </head>
+
+  <body>
+    <div id='pagebackground' class='pagebackground'>
+      <form th:action="@{/signin}" method='post' class='rectangle'>
+		<button id='titre' class='bigbutton titre'>Pay My Buddy</button>
+        <div id='inputfield' class='inputfield if1'>
+          <input type="text" id="username" name="userName" value="Nom d'utilisateur" class='inputlabel'>
+        </div>
+        <div id='inputfield2' class='inputfield if2'>
+          <input type="text" id="mail" name="email" value="Mail" class='inputlabel'>       
+        </div>
+        <div id='inputfield3' class='inputfield if3'>
+          <input type="password" id="pass" name="password" value="Mot de passe" class='inputlabel'>
+        </div>
+
+        <input type="submit" value="Enregistrer" class="bigbutton validate">
+        <span th:text="${response}"></span>
+		<div th:if="${param.error}" class='if4'>
+						Email déjà utilisé.
+					</div>
+      </form>
+      </div>
+  </body>
+</html>
+
+
+
+  

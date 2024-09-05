@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<link rel="stylesheet" th:href="@{/css/style.css}" />
+</head>
+
+<body>
+	<header class='headernavigation'>
+		<div id='paymybuddy' class='head__title'>
+			Pay My Buddy</div>
+		</div>
+		<nav class='head__nav'>
+			<a id='transférer' class='head__links' th:href="@{/transfer}">Transférer</a>
+			<a id='profil' class='head__links selected' th:href="@{/profile}">Profil</a>
+			<a id='ajouterrelation' class='head__links' th:href="@{/relation}">Ajouter relation</a>
+			<a id='sedéconnecter' class='head__links' th:href="@{/logout}">Se déconnecter</a>
+		</nav>
+	</header>
+	<form class='cadreprofile' th:action="@{/profile}" method='post'>
+		<div class='inputcontainerprofile'>
+			<div class='labelprofile'>Username:</div><input type="text" id="username" name="userName"
+				th:value="${user.userName}" class='inputfieldprofile'>
+		</div>
+		<div class='inputcontainerprofile'>
+			<div class='labelprofile'>Email:</div><input type="email" id="email" name="email"
+				th:value="${user.email}" class='inputfieldprofile'>
+		</div>
+		<div class='inputcontainerprofile'>
+			<div class='labelprofile'>Mot de passe:</div><input type="password" id="password"
+				name="password" th:value="${user.password}" class='inputfieldprofile'>
+		</div>
+		<input type="submit" value="Modifier" class='bigbutton titre validprofile'>
+		<div th:if="${param.error}" class='if2'>Données manquantes pour mise à jour</div>
+		<div th:if="${param.updateOK}" class='if2'>Données mises à jour</div>
+	</form>
+</body>
+
+</html>

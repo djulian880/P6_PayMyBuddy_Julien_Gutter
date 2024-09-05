@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<link rel="stylesheet" th:href="@{/css/style.css}" type="text/css" />
+</head>
+
+<body>
+	<div id='pagebackground' class='pagebackground'>
+		<form th:action="@{/login}" method='post' class='rectangle'>
+			<button id='titre' class='bigbutton titre'>Pay My Buddy</button>
+			<div id='inputfield' class='inputfield if1' top=199px left=90px>
+				<input type="email" id="username" name="username" value="Mail" class='inputlabel'>
+			</div>
+			<div id='inputfield2' class='inputfield if2' top=301px left=90px>
+				<input type="password" id="password" name="password" value="Mot de passe" class='inputlabel'>
+			</div>
+			<span th:text="${response}" class='if3'></span>
+			<input type="submit" value="Se connecter" class='bigbutton validate'>
+			<div th:if="${param.error}" class='if4'>
+				Nom d'utilisateur ou mot de passe incorrect.<br>
+				<a id='signin' class='head__links' th:href="@{/signin}">Cliquez ici pour vous inscrire</a>
+			</div>
+			<div th:if="${param.lgout}" class='if4' >
+				Vous avez été déconnecté.
+			</div>
+		</form>
+
+	</div>
+</body>
+
+</html>

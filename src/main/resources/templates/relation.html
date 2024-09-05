@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<link rel="stylesheet" th:href="@{/css/style.css}" />
+</head>
+
+<body>
+	<header class='headernavigation'>
+		<div id='paymybuddy' class='head__title'>
+			Pay My Buddy</div>
+		</div>
+		<nav class='head__nav'>
+			<a id='transférer' class='head__links' th:href="@{/transfer}">Transférer</a>
+			<a id='profil' class='head__links' th:href="@{/profile}">Profil</a>
+			<a id='ajouterrelation' class='head__links selected' th:href="@{/relation}">Ajouter relation</a>
+			<a id='sedéconnecter' class='head__links' th:href="@{/logout}">Se déconnecter</a>
+		</nav>
+	</header>
+	<form class='cadrerelation' th:action="@{/relation}" method='post'>
+		<div class='chercherunerelation'>Chercher une relation:</div>
+		<input type="email" id="email" name="email" value="Saisir une adresse email" class='inputfieldrelation'>
+		<input type="submit" value="Ajouter" class='bigbutton titre validrelation'>
+		<div th:if="${param.error}" class='if1'>Relation non trouvée</div>
+		<div th:if="${param.addOK}" class='if1'>Relation ajoutée!</div>
+		<div th:if="${param.alreadyPresent}" class='if1'>Relation déjà présente.</div>
+	</form>
+</body>
+
+</html>
