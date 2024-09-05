@@ -1,8 +1,12 @@
 package com.openclassrooms.paymybuddyjg.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -71,6 +75,9 @@ public class TransactionServiceTest {
 		transactions.add(transaction1);
 		transactions.add(transaction2);
 		Mockito.when(transactionRepository.findAll()).thenReturn(transactions);
+		
+		Mockito.when(transactionRepository.findBySender(sender)).thenReturn(transactions);
+
 	}
 
 	@Test
@@ -97,4 +104,25 @@ public class TransactionServiceTest {
 
 		assertEquals(transactions, transactionService.getTransactions());
 	}
+	
+
+    @Test
+    public void testGetTransactionsBySender() throws Exception {
+        User sender = new User();
+        sender.setEmail("test1@test.com");
+        sender.setId_user(1);
+        sender.setPassword("passtest1");
+        sender.setUserName("username1");
+
+        // Exécution de la méthode à tester
+        Iterable<Transaction> result = transactionService.getTransactionsBySender(sender);
+
+        // Vérification des résultats
+        assertNotNull(result);
+        assertEquals(2, ((List<Transaction>) result).size());
+        assertEquals("DescriptionTest", ((List<Transaction>) result).get(0).getDescription());
+
+        // Vérifier que findBySender a bien été appelé
+        verify(transactionRepository, times(1)).findBySender(sender);
+    }
 }
