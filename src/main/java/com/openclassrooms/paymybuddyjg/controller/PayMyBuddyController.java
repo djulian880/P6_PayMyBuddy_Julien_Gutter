@@ -8,6 +8,7 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -18,8 +19,8 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-
 import com.openclassrooms.paymybuddyjg.DTO.TransactionDTO;
+import com.openclassrooms.paymybuddyjg.configuration.CustomUserDetailsService;
 import com.openclassrooms.paymybuddyjg.model.Transaction;
 import com.openclassrooms.paymybuddyjg.model.User;
 import com.openclassrooms.paymybuddyjg.service.TransactionService;
@@ -32,217 +33,231 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+
 @Controller
 public class PayMyBuddyController {
 
 	@Autowired
 	UserService userService;
-	
+
 	@Autowired
 	TransactionService transactionService;
-	
+
 	@Autowired
 	private HttpServletRequest request;
 
 	@Autowired
-	private HttpServletResponse response;    
-	    
+	private HttpServletResponse response;
+
 	private static Logger logger = LoggerFactory.getLogger(PayMyBuddyController.class);
-	
+
+	private BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
+	/**
+	 * /login Custom login page
+	 * 
+	 */
 	@GetMapping("/login")
 	public void getLoginPage() {
-	
-    }
-	
+
+	}
+
+	/**
+	 * /logout Custom logoutpage, used to confirm logout by user
+	 * 
+	 */
 	@GetMapping("/logout")
 	public void getLogoutPage() {
-	
-    }
-	
-    @GetMapping("/custom-logout")
-    public String customLogout() {
-        // Obtenir le contexte de sécurité actuel
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        
-        if (auth != null) {
-            // Utiliser SecurityContextLogoutHandler pour déconnecter l'utilisateur
-            new SecurityContextLogoutHandler().logout(request, response, auth);
-        }
 
-        // Redirection après la déconnexion
-        return "redirect:/login?logout=true";
-    }
-    
-	@GetMapping("/profile")
-	public void getProfile(Model model,@AuthenticationPrincipal UserDetails userDetails) {
-		Optional<User> user = userService.getUserByEmail(userDetails.getUsername());
-		if (user.isPresent()) {
-			User userFound=user.get();
-			userFound.setPassword("");
-			model.addAttribute("user",userFound);
+	}
+
+	/**
+	 * /custom-logout Specific endpoint to unlog by the controller the user
+	 * 
+	 */
+	@GetMapping("/custom-logout")
+	public String customLogout() {
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		if (auth != null) {
+			new SecurityContextLogoutHandler().logout(request, response, auth);
 		} else {
-		//TODO
+			logger.error("Erreur dans la déconnexion de l'utilisateur courant");
 		}
-    }
-	
-	@PostMapping("/profile")
-	public String updateProfile(Model model,@AuthenticationPrincipal UserDetails userDetails,@ModelAttribute User userUpdated) {
+		return "redirect:/login?logout=true";
+	}
+
+	/**
+	 * /profile GET - Show the actual UserName and Email with additional field for
+	 * password in order to validate them for update.
+	 */
+	@GetMapping("/profile")
+	public void getProfile(Model model, @AuthenticationPrincipal UserDetails userDetails) {
 		Optional<User> user = userService.getUserByEmail(userDetails.getUsername());
 		if (user.isPresent()) {
-			User userLogged=user.get();
-			
-			
-			if(userUpdated.getUserName().isEmpty() || userUpdated.getEmail().isEmpty() || userUpdated.getPassword().isEmpty()) {
+			User userFound = user.get();
+			// Evite l'affichage du mot de passe de l'utilisateurm
+			userFound.setPassword("");
+			model.addAttribute("user", userFound);
+		} else {
+			logger.error("Impossible de récupérer l'utilisateur connecté");
+		}
+	}
+
+	/**
+	 * /profile POST - update the actual user fields
+	 * 
+	 */
+	@PostMapping("/profile")
+	public String updateProfile(Model model, @AuthenticationPrincipal UserDetails userDetails,
+			@ModelAttribute User userUpdated) {
+		Optional<User> user = userService.getUserByEmail(userDetails.getUsername());
+		if (user.isPresent()) {
+			User userLogged = user.get();
+			if (userUpdated.getUserName().isEmpty() || userUpdated.getEmail().isEmpty()
+					|| userUpdated.getPassword().isEmpty()) {
 				return "redirect:/profile?error=true";
-			}
-			else {
-				
+			} else {
 				userLogged.setEmail(userUpdated.getEmail());
 				userLogged.setUserName(userUpdated.getUserName());
-				BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-				String cryptedPassword=passwordEncoder.encode(userUpdated.getPassword());
-				
-				
-				
-				userLogged.setPassword(cryptedPassword);
+				userLogged.setPassword(passwordEncoder.encode(userUpdated.getPassword()));
 				userService.saveUser(userLogged);
 				return "redirect:/profile?updateOK=true";
 			}
-			
-			
-	
 		} else {
-		//TODO
+			logger.error("Impossible de récupérer l'utilisateur connecté");
 			return "redirect:/profile";
 		}
-    }
-	
+	}
+
+	/**
+	 * /transfer GET - Show the list of transfer made and fields to make a new
+	 * transfer
+	 */
 	@GetMapping("/transfer")
-	public void getTransfers(Model model,@AuthenticationPrincipal UserDetails userDetails) {
+	public void getTransfers(Model model, @AuthenticationPrincipal UserDetails userDetails) {
 		Optional<User> user = userService.getUserByEmail(userDetails.getUsername());
 		if (user.isPresent()) {
-			User userFound=user.get();
-			
-			
+			User userFound = user.get();
+
+			// Build the list of relations for displaying
 			List<String> relations = new ArrayList<String>();
-			for(int i=0;i<userFound.getConnections().size();i++) {
+			for (int i = 0; i < userFound.getConnections().size(); i++) {
 				relations.add(userFound.getConnections().get(i).getUserName());
 			}
 			model.addAttribute("relations", relations);
-			System.out.println("Contenu: "+userFound.getConnections().size()+" telations:"+relations.size());
-			
-			
-			
-			List <Transaction> listTransactions=new ArrayList<Transaction>();
-			Iterator<Transaction> iterator =transactionService.getTransactionsBySender(userFound).iterator();
+
+			// Prepare the list of transactions for displaying
+			List<Transaction> listTransactions = new ArrayList<Transaction>();
+			Iterator<Transaction> iterator = transactionService.getTransactionsBySender(userFound).iterator();
 			while (iterator.hasNext()) {
-			    Transaction element = iterator.next();
-			    listTransactions.add(element);
+				Transaction element = iterator.next();
+				listTransactions.add(element);
 			}
-			model.addAttribute("transactions",listTransactions);
-			
+			model.addAttribute("transactions", listTransactions);
+
 		} else {
-			//TODO
+			logger.error("Impossible de récupérer l'utilisateur connecté");
 		}
-    }
-	
+	}
+
+	/**
+	 * /transfer POST - Create a new transfer with the parameters passed.
+	 */
 	@PostMapping("/transfer")
-	public String getTransfers(Model model,@ModelAttribute TransactionDTO transactionDTO,@AuthenticationPrincipal UserDetails userDetails) {
-		System.out.println("Contenu: "+transactionDTO.description+" "+transactionDTO.selectedRelation+" "+transactionDTO.amount);
-		
+	public String getTransfers(Model model, @ModelAttribute TransactionDTO transactionDTO,
+			@AuthenticationPrincipal UserDetails userDetails) {
 		Optional<User> user = userService.getUserByEmail(userDetails.getUsername());
 		if (user.isPresent()) {
-			System.out.println("Utilisateur authetifié récupéré");
-			User userFound=user.get();
-			
-			Transaction transaction=new Transaction();
-			transaction.setAmount(transactionDTO.amount);
-			transaction.setDescription(transactionDTO.description);
-			transaction.setSender(userFound);
-			
-			System.out.println("Recherche utilisateur receveur "+transactionDTO.selectedRelation);
+			User userFound = user.get();
 			Optional<User> userRelation = userService.getUserByUserName(transactionDTO.selectedRelation);
 			if (userRelation.isPresent()) {
-				System.out.println("Utilisateur receveur récupéré");
-				User userReceiver=userRelation.get();
+				User userReceiver = userRelation.get();
+				Transaction transaction = new Transaction();
+				transaction.setAmount(transactionDTO.amount);
+				transaction.setDescription(transactionDTO.description);
+				transaction.setSender(userFound);
 				transaction.setReceiver(userReceiver);
 				transactionService.saveTransaction(transaction);
+				logger.info("Transaction correctement enregistrée");
 				return "redirect:/transfer";
+			} else {
+				logger.debug("Utilisateur receveur non récupéré: " + transactionDTO.selectedRelation);
 			}
-			
-			else {
-				//TODO
-				System.out.println("Utilisateur receveur non récupéré: "+transactionDTO.selectedRelation);
-			}
-
 		} else {
-			//TODO
+			logger.error("Impossible de récupérer l'utilisateur connecté");
 		}
 		return "redirect:/transfer";
-    }
-	
+	}
+
+	/**
+	 * /signin GET - Enable a new user to sign in, this page is accessed by the
+	 * login page in case of failure of login.
+	 * 
+	 */
 	@GetMapping("/signin")
 	public void getSignin(Model model) {
-	
-    }
-	
-	
+
+	}
+
+	/**
+	 * /signin POST - Register a new user with the username, email and password
+	 * given.
+	 * 
+	 */
 	@PostMapping("/signin")
-	public String postSignin(Model model,@ModelAttribute User newUser) {
-		System.out.println("Contenu: "+newUser.getUserName()+" "+newUser.getEmail()+" "+newUser.getPassword());
-		// System.out.println("Contenu: "+responseFormat.username+" "+responseFormat.mail+" "+responseFormat.pass);
-			Optional<User> user = userService.getUserByEmail(newUser.getEmail());
-			if (user.isPresent()) {
-				//TODO
-				return "/signin?error=true";
-				
-			} else {
-				BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-				String cryptedPassword=passwordEncoder.encode(newUser.getPassword());
-				newUser.setPassword(cryptedPassword);
-				userService.saveUser(newUser);
-				return "redirect:/login";
-			}
-		 
-    }
-	
+	public String postSignin(Model model, @ModelAttribute User newUser) {
+		Optional<User> user = userService.getUserByEmail(newUser.getEmail());
+		if (user.isPresent()) {
+			logger.info("Utilisateur déjà existant.");
+			return "/signin?error=true";
+
+		} else {
+			newUser.setPassword(passwordEncoder.encode(newUser.getPassword()));
+			userService.saveUser(newUser);
+			logger.info("Nouvel utilisateur créé.");
+			return "redirect:/login";
+		}
+	}
+
+	/**
+	 * /relation GET - Shows a form to add a new relation by email.
+	 * 
+	 */
 	@GetMapping("/relation")
 	public void getRelations(Model model) {
-		
-    }
-	
+
+	}
+
+	/**
+	 * /relation POST - Adds the current email given in the relation's list.
+	 * 
+	 */
 	@PostMapping("/relation")
-	public String postRelations(Model model,@AuthenticationPrincipal UserDetails userDetails,@RequestParam("email") String email) {
-		System.out.println(" POST relation");
+	public String postRelations(Model model, @AuthenticationPrincipal UserDetails userDetails,
+			@RequestParam("email") String email) {
 		Optional<User> user = userService.getUserByEmail(userDetails.getUsername());
 		if (user.isPresent()) {
-			User loggedUser=user.get();
-			System.out.println(" Utilisateur loggé:"+loggedUser.getUserName());
-			//TODO
-		
-				Optional<User> searchedRelation = userService.getUserByEmail(email);
-				System.out.println(" Recherche relation: "+email);
-				if (searchedRelation.isPresent()) {
-					System.out.println(" Relation trouvée");
-					User relation=searchedRelation.get();
-					
-					if(loggedUser.getConnections().contains(relation)) {
-						return "redirect:/relation?alreadyPresent=true";
-					}else {
-						loggedUser.getConnections().add(relation);
-						userService.saveUser(loggedUser);
-					}
-
-					return "redirect:/relation?addOK=true";
-				}else {
-					System.out.println(" Relation pas trouvée");
-					return "redirect:/relation?error=true";
-				}		
+			User loggedUser = user.get();
+			Optional<User> searchedRelation = userService.getUserByEmail(email);
+			if (searchedRelation.isPresent()) {
+				User relation = searchedRelation.get();
+				if (loggedUser.getConnections().contains(relation)) {
+					logger.debug("Relation déjà existante");
+					return "redirect:/relation?alreadyPresent=true";
+				} else {
+					loggedUser.getConnections().add(relation);
+					userService.saveUser(loggedUser);
+					logger.info("Relation ajoutée.");
+				}
+				return "redirect:/relation?addOK=true";
+			} else {
+				logger.debug("Relation non trouvée");
+				return "redirect:/relation?error=true";
+			}
 		} else {
-			System.out.println(" Utilisateur loggé pas trouvé");
+			logger.error("Impossible de récupérer l'utilisateur connecté");
 			return "redirect:/relation";
 		}
-    }
+	}
 
-	
 }
