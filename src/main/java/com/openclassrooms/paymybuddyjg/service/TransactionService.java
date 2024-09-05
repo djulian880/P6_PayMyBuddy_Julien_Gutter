@@ -30,4 +30,8 @@ public class TransactionService {
 	public void deleteTransactionById(Integer id) {
 		transactionRepository.deleteById(id);
 	}
+	
+	public Iterable<Transaction> getTransactionsBySender(User sender) {
+		return transactionRepository.findBySender(sender);
+	}
 }
