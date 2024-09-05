@@ -2,8 +2,10 @@ package com.openclassrooms.paymybuddyjg.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.List;
 import java.util.Optional;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -21,6 +23,57 @@ import com.openclassrooms.paymybuddyjg.model.User;
 	    @Autowired
 	    private TransactionRepository transactionRepository;
 
+	    
+	
+	    private User sender;
+	    private User receiver;
+
+	    @BeforeEach
+	    void setUp() {
+	        // Créer un utilisateur pour le test
+	        sender = new User();
+	        sender.setId_user(1);
+	        sender.setUserName("test");
+
+	        receiver = new User();
+	        receiver.setId_user(2);
+	        receiver.setUserName("test2");
+	        
+	        // Ajouter des transactions à la base de données
+	        Transaction transaction1 = new Transaction();
+	        transaction1.setAmount(100.0);
+	        transaction1.setDescription("Test Transaction 1");
+	        transaction1.setSender(sender);
+	        transaction1.setReceiver(receiver);
+
+	        Transaction transaction2 = new Transaction();
+	        transaction2.setAmount(200.0);
+	        transaction2.setDescription("Test Transaction 2");
+	        transaction2.setSender(sender);
+	        transaction2.setReceiver(receiver);
+
+	        transactionRepository.save(transaction1);
+	        transactionRepository.save(transaction2);
+	    }
+
+	    @Test
+	    void testFindBySender() {
+	        // Tester la méthode findBySender
+	        Iterable<Transaction> transactions = transactionRepository.findBySender(sender);
+
+	        // Convertir l'itérable en liste pour faciliter l'affirmation
+	        List<Transaction> transactionList = (List<Transaction>) transactions;
+
+	        // Vérifier qu'il y a 2 transactions pour ce sender
+	        assertThat(transactionList).hasSize(2);
+
+	        // Vérifier les détails des transactions
+	        assertThat(transactionList.get(0).getSender()).isEqualTo(sender);
+	        assertThat(transactionList.get(1).getSender()).isEqualTo(sender);
+	    }
+	    
+	    
+	    
 	 @Test
 	    public void testSaveTransaction() {
 	        // Given
@@ -95,4 +148,5 @@ import com.openclassrooms.paymybuddyjg.model.User;
 	        // Then
 	        assertThat(deletedTransaction).isNotPresent();
 	    }
+	    
 }
