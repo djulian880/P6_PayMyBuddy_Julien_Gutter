@@ -1,6 +1,9 @@
 package com.openclassrooms.paymybuddyjg.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import java.util.ArrayList;
 import java.util.Optional;
@@ -56,6 +59,9 @@ public class UserServiceTest {
 		users.add(user1);
 		users.add(user2);
 		Mockito.when(userRepository.findAll()).thenReturn(users);
+        Mockito.when(userRepository.findByEmail("test1@test.com")).thenReturn(Optional.of(mockUser));
+        Mockito.when(userRepository.findByUserName("username1")).thenReturn(Optional.of(mockUser));
+    
 	}
 
 	@Test
@@ -82,4 +88,26 @@ public class UserServiceTest {
 
 		assertEquals(users, userService.getUsers());
 	}
+	
+	  // Nouveau test pour getUserByEmail
+    @Test
+    public void testGetUserByEmail() throws Exception {
+        Optional<User> user = userService.getUserByEmail("test1@test.com");
+        assertTrue(user.isPresent());
+        assertEquals("test1@test.com", user.get().getEmail());
+
+        // Vérifie que findByEmail a bien été appelé
+        verify(userRepository, times(1)).findByEmail("test1@test.com");
+    }
+
+    // Nouveau test pour getUserByUserName
+    @Test
+    public void testGetUserByUserName() throws Exception {
+        Optional<User> user = userService.getUserByUserName("username1");
+        assertTrue(user.isPresent());
+        assertEquals("username1", user.get().getUserName());
+
+        // Vérifie que findByUserName a bien été appelé
+        verify(userRepository, times(1)).findByUserName("username1");
+    }
 }
