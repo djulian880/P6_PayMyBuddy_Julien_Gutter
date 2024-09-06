@@ -8,7 +8,6 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -20,7 +19,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.openclassrooms.paymybuddyjg.DTO.TransactionDTO;
-import com.openclassrooms.paymybuddyjg.configuration.CustomUserDetailsService;
 import com.openclassrooms.paymybuddyjg.model.Transaction;
 import com.openclassrooms.paymybuddyjg.model.User;
 import com.openclassrooms.paymybuddyjg.service.TransactionService;
@@ -28,11 +26,9 @@ import com.openclassrooms.paymybuddyjg.service.UserService;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.Data;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @Controller
 public class PayMyBuddyController {

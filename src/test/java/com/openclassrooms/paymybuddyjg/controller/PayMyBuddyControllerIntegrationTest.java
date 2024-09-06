@@ -1,6 +1,5 @@
 package com.openclassrooms.paymybuddyjg.controller;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -16,14 +15,10 @@ import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
-
 import com.openclassrooms.paymybuddyjg.model.Transaction;
 import com.openclassrooms.paymybuddyjg.model.User;
 import com.openclassrooms.paymybuddyjg.service.TransactionService;
@@ -42,9 +37,15 @@ public class PayMyBuddyControllerIntegrationTest {
     @MockBean
     private TransactionService transactionService;
 
+    private User mockUser;
+    
     @BeforeEach
     public void setup() {
         // Configuration initiale si nécessaire
+    	mockUser = new User();
+        mockUser.setEmail("test@example.com");
+        mockUser.setUserName("testUser");
+        mockUser.setPassword("testpass");
     }
 
     
@@ -80,9 +81,6 @@ public class PayMyBuddyControllerIntegrationTest {
     @Test
     @WithMockUser(username = "test@example.com", roles = "USER")
     public void testGetProfile() throws Exception {
-        User mockUser = new User();
-        mockUser.setEmail("test@example.com");
-        mockUser.setUserName("testUser");
         when(userService.getUserByEmail("test@example.com")).thenReturn(Optional.of(mockUser));
 
         mockMvc.perform(get("/profile"))
@@ -93,10 +91,6 @@ public class PayMyBuddyControllerIntegrationTest {
     @Test
     @WithMockUser(username = "test@example.com", roles = "USER")
     public void testUpdateProfile() throws Exception {
-        User mockUser = new User();
-        mockUser.setEmail("test@example.com");
-        mockUser.setUserName("testUser");
-        mockUser.setPassword("testpass");
         when(userService.getUserByEmail("test@example.com")).thenReturn(Optional.of(mockUser));
 
         mockMvc.perform(post("/profile")
@@ -113,11 +107,7 @@ public class PayMyBuddyControllerIntegrationTest {
     @Test
     @WithMockUser
     public void testGetTransfers() throws Exception {
-        User mockUser = new User();
-        mockUser.setEmail("test@example.com");
-        mockUser.setUserName("testUser");
         when(userService.getUserByEmail("test@example.com")).thenReturn(Optional.of(mockUser));
-
         mockMvc.perform(get("/transfer"))
                 .andExpect(status().isOk());
     }
@@ -159,9 +149,8 @@ public class PayMyBuddyControllerIntegrationTest {
         mockUser2.setEmail("test2@example.com");
         mockUser2.setUserName("friend2");
         mockUser2.setPassword("testpass2");
-    	
-    	
-    	User mockUser = new User();
+    	 	
+
     	mockUser.getConnections().add(mockUser1);
         mockUser.getConnections().add(mockUser2);
         
@@ -231,8 +220,6 @@ public class PayMyBuddyControllerIntegrationTest {
     @Test
     @WithMockUser(username = "test@example.com", roles = "USER")
     public void testPostRelations() throws Exception {
-        User mockUser = new User();
-        mockUser.setEmail("test@example.com");
         when(userService.getUserByEmail("test@example.com")).thenReturn(Optional.of(mockUser));
         when(userService.getUserByEmail("relation@example.com")).thenReturn(Optional.of(new User()));
 
