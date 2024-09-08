@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<link rel="stylesheet" th:href="@{/css/style.css}" />
+</head>
+
+<body>
+	<header class='headernavigation'>
+		<div id='paymybuddy' class='head__title'>
+			Pay My Buddy</div>
+		</div>
+		<nav class='head__nav'>
+			<a id='transférer' class='head__links selected' th:href="@{/transfer}">Transférer</a>
+			<a id='profil' class='head__links' th:href="@{/profile}">Profil</a>
+			<a id='ajouterrelation' class='head__links' th:href="@{/relation}">Ajouter relation</a>
+			<a id='sedéconnecter' class='head__links' th:href="@{/logout}">Se déconnecter</a>
+		</nav>
+	</header>
+	<form th:action="@{/transfer}" method='post'class='cadretransfert'>
+		<div class='inputfieldtransfer tf_if1'>
+			<select class="inputlabel1" name='selectedRelation' id="dropDownList">
+				<option value="0">Sélectionner une relation</option>
+				<option th:each="relation : ${relations}" th:value="${relation}" th:text="${relation}"></option>
+			</select>
+
+			</div>
+			<div class='inputfieldtransfer tf_if2'>
+				<input type="text" id="description" name="description" value="Description" class='inputlabel'>
+			</div>
+				<div class='inputfieldtransfer tf_if3'>
+					<input type="number" step="0.01" id="value" name="amount" value="0" class='inputlabel2'>
+					<div class='symbeuro'>€</div>
+				</div>
+				<input type="submit" value="Payer" class='buttonpayer'>
+	</form>
+	<div id='tabletransferts' class='cadretable'>
+		<div id='title' class='title'>
+			Mes Transactions</div>
+		<table>
+			<thead>
+				<th>Relations</th>
+				<th>Description</th>
+				<th>Montant</th>
+			</thead>
+			<tbody>
+				<tr th:each="transaction: ${transactions}">
+					<td th:text="${transaction.receiver.userName}" />
+					<td th:text="${transaction.description}" />
+					<td th:text="${transaction.amount}" />
+				</tr>
+			</tbody>
+		</table>
+	</div>
+
+</body>
+
+</html>
